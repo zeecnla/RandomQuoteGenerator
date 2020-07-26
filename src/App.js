@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { Link, BrowserRouter, Route } from "react-router-dom"
 import "./App.css"
+import Quote from "./components/Quote"
 
 const Quotes = (props) => {
   const { author } = props
@@ -15,42 +16,30 @@ const Quotes = (props) => {
       })
       .then(({ quotes }) => {
         console.log(quotes)
-        setAuthorQuotes(quotes)
+        setAuthorQuotes((authorQuotes) => [...authorQuotes, ...quotes])
+        console.log(authorQuotes)
       })
       .catch((error) => {
         console.log(error)
       })
   }, [])
-  console.log(" bruhrhuruhrhurhurhuur")
   return (
     <div>
-      <h1>{author}</h1>
-      <div>
-        <ul>
-          {authorQuotes.forEach(({ quoteText }) => (
-            <li>
-              <h3>{quoteText}</h3>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <h1 style={{ paddingLeft: `20px` }}>{author}</h1>
+      <ul>
+        {authorQuotes.map(({ quoteText }, index) => (
+          <li key={index}>
+            <Quote quoteText={quoteText} />
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
 
-const App = () => (
-  <BrowserRouter>
-    <div className="sans-serif">
-      <Route path="/" component={Main} />
-      <Route path="/author" component={Quotes} />
-    </div>
-  </BrowserRouter>
-)
-
-const Main = () => {
+const App = () => {
   const [quote, setQuote] = useState()
   const [author, setAuthor] = useState()
-
   useEffect(() => {
     fetch("https://quote-garden.herokuapp.com/api/v2/quotes/random")
       .then((resp) => {
@@ -67,7 +56,6 @@ const Main = () => {
         console.log(error)
       })
   }, [])
-
   const getQuote = () => {
     fetch("https://quote-garden.herokuapp.com/api/v2/quotes/random")
       .then((resp) => {
@@ -83,9 +71,8 @@ const Main = () => {
         console.log(error)
       })
   }
-
   return (
-    <div className="App">
+    <div className="outter">
       <header className="App-header">
         <button
           onClick={() => {
@@ -95,15 +82,35 @@ const Main = () => {
           random
         </button>
       </header>
-
       <main>
-        <h1>{quote}</h1>
+        <BrowserRouter>
+          <Route
+            exact
+            path="/"
+            component={() => <Main author={author} quote={quote} />}
+          />
+          <Route path="/author" component={() => <Quotes author={author} />} />
+        </BrowserRouter>
+      </main>
+
+      <footer>Cesar Melchor @DevChallenges.io</footer>
+    </div>
+  )
+}
+
+const Main = ({ author, quote }) => {
+  console.log(author)
+  return (
+    <div className="App">
+      <main>
+        <Quote quoteText={quote} />
         <Link to="/author" author={author}>
-          <h3>{author}</h3>
-          <span class="material-icons">arrow_right_alt</span>
+          <div className="author">
+            <h3>{author}</h3>
+            <span class="material-icons">arrow_right_alt</span>
+          </div>
         </Link>
       </main>
-      <footer>Cesar Melchor @ DevChallenges.io</footer>
     </div>
   )
 }
